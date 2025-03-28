@@ -1,0 +1,185 @@
+/* Styles pour les étiquettes */
+.etiquette {
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  border: 2px solid;
+
+  box-sizing: border-box;
+}
+
+/* Classe ajoutée temporairement pendant l'exportation */
+.export-visible {
+  border: 2px solid #333 !important;
+  background-color: white !important;
+  padding: 10px !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+.export-visible .etiquette {
+  border: 2px solid #000 !important;
+  transform: scale(1) !important;
+  opacity: 1 !important;
+  display: block !important;
+  visibility: visible !important;
+  box-shadow: none !important;
+  background-color: white !important;
+}
+
+/* Nouvelle classe pour l'exportation directe */
+.export-ready {
+  border: 2px solid #000 !important;
+  background-color: white !important;
+  padding: 10px !important;
+
+  display: flex !important; /* Forcer l'affichage flex */
+  flex-direction: row !important; /* Garder la direction horizontale */
+  gap: 1.5rem !important; /* Maintenir l'espacement entre les éléments */
+  align-items: center !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  box-shadow: none !important;
+  position: relative !important;
+  min-width: 400px !important;
+  justify-content: space-between !important;
+  width: auto !important;
+}
+
+/* S'assurer que le bloc d'informations reste à gauche */
+.export-ready > div.etiquette-info {
+  flex: 1 !important;
+  max-width: 70% !important;
+  text-align: left !important;
+  display: block !important;
+}
+
+/* S'assurer que le bloc du QR code reste à droite */
+.export-ready > div:last-child {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: auto !important;
+  float: right !important;
+  max-width: 30% !important;
+  padding-left: 10px !important;
+}
+
+/* Garantir que les codes-barres s'affichent correctement */
+.export-ready svg {
+  display: block !important;
+  visibility: visible !important;
+  margin: 5px 0 !important;
+}
+
+/* S'assurer que le QR code apparaît correctement */
+.export-ready canvas {
+  display: block !important;
+  visibility: visible !important;
+  margin: 0 auto !important;
+}
+
+.export-ready::after {
+  content: "Conçu par Guillaume Koffi 0713402421";
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10px;
+  color: #666;
+}
+
+/* Conteneur spécifique pour l'export */
+.export-container {
+  padding: 20px;
+  background-color: white;
+  border-radius: 0.5rem;
+  width: 500px;
+  box-sizing: border-box;
+}
+
+.export-container .etiquette {
+  border: 1px solid #ccc;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Style pour le conteneur d'impression */
+.print-container {
+  background-color: white;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Masquer la zone d'impression */
+.hidden,
+#printable-area {
+  display: none !important;
+}
+
+/* Styles pour les boutons d'export */
+.flex.gap-2 button {
+  transition: all 0.2s ease-in-out;
+}
+
+.flex.gap-2 button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles pour l'impression */
+@media print {
+  body {
+    background: white;
+  }
+
+  #root {
+    padding: 0;
+  }
+
+  .print-container {
+    width: 100%;
+    max-width: none;
+  }
+
+  button,
+  h1,
+  .grid.grid-cols-2:not(.print-container) {
+    display: none !important;
+  }
+
+  .etiquette {
+    border: 1px solid #ccc;
+    padding: 10mm;
+    width: 90mm;
+    height: 50mm;
+    page-break-inside: avoid;
+    display: flex;
+    gap: 10mm;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Ajustements pour la mise en page horizontale */
+  .etiquette > div:first-child {
+    text-align: left;
+    width: 60%;
+  }
+
+  .etiquette > div:last-child {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Permet d'éviter les sauts de page au milieu des étiquettes */
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}
