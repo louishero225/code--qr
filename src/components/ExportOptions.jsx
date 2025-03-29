@@ -4,8 +4,6 @@ import React from 'react';
  * Composant pour les options d'export et d'impression
  */
 const ExportOptions = ({ 
-  onPrint, 
-  onExportPNG, 
   onExportJPEG, 
   onExportPDF, 
   etiquettesParPage, 
@@ -15,22 +13,10 @@ const ExportOptions = ({
     <div className="flex flex-col gap-4 mb-4 w-full max-w-md">
       <div className="flex flex-wrap gap-2">
         <button
-          onClick={onPrint}
+          onClick={onExportJPEG}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
-          Imprimer
-        </button>
-        <button
-          onClick={onExportPNG}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-        >
-          PNG
-        </button>
-        <button
-          onClick={onExportJPEG}
-          className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-        >
-          JPEG
+          Afficher l'image
         </button>
         <button
           onClick={onExportPDF}
@@ -49,7 +35,7 @@ const ExportOptions = ({
             max="30"
             value={etiquettesParPage}
             onChange={(e) => setEtiquettesParPage(Number(e.target.value))}
-            className="border p-1 rounded w-16 ml-2"
+            className="ml-2 p-1 border rounded w-16 text-center"
           />
         </label>
         <span className="text-xs text-gray-500">

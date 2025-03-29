@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { toPng, toJpeg } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import { jsPDF } from "jspdf";
 import Etiquette from "./components/Etiquette";
 import EtiquetteForm from "./components/EtiquetteForm";
@@ -31,187 +31,6 @@ const EtiquetteApp = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Fonction pour imprimer uniquement l'étiquette
-  const handlePrint = () => {
-    // On utilise le printable-area qui contient une copie de l'étiquette pour l'impression
-    const printableArea = document.getElementById('printable-area');
-
-    if (!printableArea) return;
-
-    // Créer un iframe invisible pour l'impression
-    const printFrame = document.createElement('iframe');
-    printFrame.style.position = 'fixed';
-    printFrame.style.right = '0';
-    printFrame.style.bottom = '0';
-    printFrame.style.width = '0';
-    printFrame.style.height = '0';
-    printFrame.style.border = '0';
-    document.body.appendChild(printFrame);
-
-    // Récupérer le document dans l'iframe
-    const frameDoc = printFrame.contentDocument || printFrame.contentWindow.document;
-
-    // Récupérer les styles de la page actuelle
-    const stylesheets = Array.from(document.styleSheets);
-    let cssText = '';
-    stylesheets.forEach(sheet => {
-      try {
-        const cssRules = sheet.cssRules || sheet.rules;
-        for (let i = 0; i < cssRules.length; i++) {
-          cssText += cssRules[i].cssText + '\n';
-        }
-      } catch (err) {
-        console.log('Erreur lors de l\'accès aux règles CSS: ', err);
-      }
-    });
-
-    // Création du contenu à imprimer
-    frameDoc.open();
-    frameDoc.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Impression d'étiquette</title>
-          <style>
-            ${cssText}
-            @page {
-              size: auto;
-              margin: 0mm;
-            }
-            body {
-              margin: 10mm;
-              padding: 0;
-              font-family: Arial, sans-serif;
-              background: white;
-            }
-            .print-container {
-              width: 100%;
-              height: 100%;
-              display: flex;
-              justify-content: center;
-              flex-direction: column;
-              align-items: center;
-            }
-            .print-footer {
-              margin-top: 20px;
-              font-size: 10px;
-              color: #666;
-              text-align: center;
-            }
-            .print-hide {
-              display: none !important;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="print-container">
-            ${printableArea.innerHTML}
-            <div class="print-footer">
-              Conçu par Guillaume Koffi 0713402421
-            </div>
-          </div>
-        </body>
-      </html>
-    `);
-    frameDoc.close();
-
-    // Attendre que tout soit chargé, puis imprimer
-    printFrame.onload = function() {
-      try {
-        // Appliquer les codes-barres
-        if (frameDoc.querySelectorAll('svg').length > 0) {
-          const barcodes = frameDoc.querySelectorAll('svg');
-
-          // Simuler l'application des codes-barres aux SVG
-          for (let i = 0; i < barcodes.length; i++) {
-            try {
-              if (i === 0 && formData.imei1 && formData.imei1.trim() !== "") {
-                JsBarcode(barcodes[i], formData.imei1, {
-                  format: "CODE128",
-                  displayValue: false,
-                  width: 1.5,
-                  height: 30,
-                });
-              } else if (i === 1 && formData.imei2 && formData.imei2.trim() !== "") {
-                JsBarcode(barcodes[i], formData.imei2, {
-                  format: "CODE128",
-                  displayValue: false,
-                  width: 1.5,
-                  height: 30,
-                });
-              } else {
-                // Pour les SVG sans données valides
-                barcodes[i].innerHTML = "<text x='50' y='20' fill='gray'>Aucun IMEI spécifié</text>";
-              }
-            } catch (error) {
-              console.error("Erreur lors de la génération des codes-barres pour l'impression:", error);
-              barcodes[i].innerHTML = "<text x='50' y='20' fill='red'>Erreur de code-barre</text>";
-            }
-          }
-        }
-
-        setTimeout(() => {
-          // Imprimer et supprimer l'iframe
-          printFrame.contentWindow.print();
-          setTimeout(() => {
-            document.body.removeChild(printFrame);
-          }, 100);
-        }, 500);
-      } catch (err) {
-        console.error('Erreur lors de l\'impression:', err);
-        document.body.removeChild(printFrame);
-      }
-    };
-  };
-
-  // Fonction pour exporter en PNG
-  const handleExportPNG = () => {
-    if (!etiquetteRef.current) return;
-    
-    console.log("Démarrage de l'export PNG");
-    
-    // Options pour améliorer la qualité et ajouter un fond blanc
-    const options = {
-      backgroundColor: '#ffffff',
-      pixelRatio: 3,
-      style: {
-        margin: '0',
-        padding: '0'
-      }
-    };
-    
-    // On capture directement l'étiquette visible
-    // Note: on utilise le div contenant l'étiquette, pas le conteneur parent
-    const etiquetteContainer = etiquetteRef.current.querySelector('.etiquette');
-    
-    if (!etiquetteContainer) {
-      console.error("Étiquette non trouvée pour l'export");
-      return;
-    }
-    
-    // Ajouter temporairement une classe pour améliorer la visibilité
-    etiquetteContainer.classList.add('export-ready');
-    
-    // Utiliser directement l'étiquette visible à l'écran
-    toPng(etiquetteContainer, options)
-      .then(dataUrl => {
-        console.log("PNG généré avec succès");
-        
-        // Créer un lien et le cliquer directement
-        const link = document.createElement('a');
-        link.download = `etiquette-${formData.model}-${formData.imei1 || 'sans-imei'}.png`;
-        link.href = dataUrl;
-        link.click();
-        
-        // Nettoyer
-        etiquetteContainer.classList.remove('export-ready');
-      })
-      .catch(err => {
-        console.error('Erreur lors de l\'export en PNG:', err);
-        etiquetteContainer.classList.remove('export-ready');
-      });
   };
 
   // Fonction pour exporter en JPEG
@@ -248,11 +67,66 @@ const EtiquetteApp = () => {
       .then(dataUrl => {
         console.log("JPEG généré avec succès");
         
-        // Créer un lien et le cliquer directement
-        const link = document.createElement('a');
-        link.download = `etiquette-${formData.model}-${formData.imei1 || 'sans-imei'}.jpg`;
-        link.href = dataUrl;
-        link.click();
+        // Ouvrir l'image dans un nouvel onglet du navigateur au lieu de la télécharger
+        const newTab = window.open();
+        newTab.document.write(`
+          <html>
+            <head>
+              <title>Étiquette ${formData.model} - Export JPEG</title>
+              <style>
+                body { 
+                  margin: 0; 
+                  display: flex; 
+                  justify-content: center; 
+                  align-items: center; 
+                  min-height: 100vh;
+                  background-color: #f0f0f0;
+                  flex-direction: column;
+                  font-family: Arial, sans-serif;
+                }
+                img { 
+                  max-width: 90%; 
+                  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                  border: 1px solid #ddd;
+                }
+                .footer {
+                  margin-top: 20px;
+                  font-size: 12px;
+                  color: #666;
+                }
+                .buttons {
+                  margin-top: 20px;
+                }
+                button {
+                  padding: 8px 15px;
+                  background: #4a90e2;
+                  color: white;
+                  border: none;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  margin: 0 5px;
+                }
+              </style>
+            </head>
+            <body>
+              <img src="${dataUrl}" alt="Étiquette ${formData.model}">
+              <div class="footer">Conçu par Guillaume Koffi 0713402421</div>
+              <div class="buttons">
+                <button onclick="window.print()">Imprimer</button>
+                <button onclick="downloadImage()">Télécharger</button>
+              </div>
+              <script>
+                function downloadImage() {
+                  const link = document.createElement('a');
+                  link.download = 'etiquette-${formData.model}-${formData.imei1 || 'sans-imei'}.jpg';
+                  link.href = '${dataUrl}';
+                  link.click();
+                }
+              </script>
+            </body>
+          </html>
+        `);
+        newTab.document.close();
         
         // Nettoyer
         etiquetteContainer.classList.remove('export-ready');
@@ -292,7 +166,7 @@ const EtiquetteApp = () => {
     etiquetteContainer.classList.add('export-ready');
     
     // Utiliser directement l'étiquette visible à l'écran
-    toPng(etiquetteContainer, options)
+    toJpeg(etiquetteContainer, options)
       .then(dataUrl => {
         console.log("Image pour PDF générée avec succès");
         
@@ -359,7 +233,7 @@ const EtiquetteApp = () => {
                     
                     try {
                       // Ajouter l'image au PDF
-                      pdf.addImage(dataUrl, 'PNG', x, y, etiquetteWidth, etiquetteHeight);
+                      pdf.addImage(dataUrl, 'JPEG', x, y, etiquetteWidth, etiquetteHeight);
                       
                       // Incrémenter le compteur d'étiquettes
                       etiquetteCount++;
@@ -376,10 +250,24 @@ const EtiquetteApp = () => {
               pdf.setTextColor(100, 100, 100);
               pdf.text(footerText, pageWidth / 2, pageHeight - 5, { align: 'center' });
               
-              console.log("PDF généré avec succès, téléchargement...");
+              console.log("PDF généré avec succès");
               
-              // Enregistrer le PDF directement
-              pdf.save(`etiquettes-${formData.model}-${formData.imei1 || 'sans-imei'}.pdf`);
+              // Générer le blob et l'URL pour l'affichage
+              const pdfBlob = pdf.output('blob');
+              const pdfUrl = URL.createObjectURL(pdfBlob);
+              
+              // Ouvrir le PDF dans un nouvel onglet
+              const newTab = window.open(pdfUrl, '_blank');
+              if (!newTab) {
+                // Si le navigateur bloque l'ouverture d'un nouvel onglet, afficher un message
+                alert("Le PDF a été généré, mais le navigateur a bloqué l'ouverture d'un nouvel onglet. Veuillez autoriser les pop-ups pour ce site.");
+                
+                // Alternative : proposer un lien de téléchargement direct
+                const link = document.createElement('a');
+                link.href = pdfUrl;
+                link.download = `etiquettes-${formData.model}-${formData.imei1 || 'sans-imei'}.pdf`;
+                link.click();
+              }
             } catch (error) {
               console.error('Erreur lors de la génération du PDF:', error);
             } finally {
@@ -396,7 +284,7 @@ const EtiquetteApp = () => {
         }
       })
       .catch(err => {
-        console.error('Erreur lors de l\'export en PNG pour le PDF:', err);
+        console.error('Erreur lors de l\'export en JPEG pour le PDF:', err);
         etiquetteContainer.classList.remove('export-ready');
       });
   };
@@ -406,58 +294,53 @@ const EtiquetteApp = () => {
     return /^\d{15}$/.test(imei);
   };
 
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   return (
-    <div className="flex flex-col items-center p-4 min-h-screen">
-      <h1 className="text-xl font-bold mb-4">Générateur d'étiquettes</h1>
+    <div className="container-app flex flex-col min-h-screen">
+      <header className="bg-primary py-4 shadow-md">
+        <div className="container mx-auto px-4">
+          <h1 className="text-center text-white text-2xl font-bold">Générateur d'étiquettes QR Code</h1>
+        </div>
+      </header>
 
-      {/* Formulaire */}
-      <EtiquetteForm 
-        formData={formData} 
-        handleChange={handleChange} 
-        validateImei={validateImei}
-      />
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Formulaire */}
+          <div className="flex-1">
+            <EtiquetteForm 
+              formData={formData} 
+              onChange={handleInputChange}
+              validateImei={validateImei}
+            />
+            
+            {/* Options d'exportation */}
+            <div className="mt-6">
+              <h2 className="text-lg font-bold mb-2">Exporter</h2>
+              <ExportOptions 
+                onExportJPEG={handleExportJPEG}
+                onExportPDF={handleExportPDF}
+                etiquettesParPage={etiquettesParPage}
+                setEtiquettesParPage={setEtiquettesParPage}
+              />
+            </div>
+          </div>
 
-      {/* Options d'export */}
-      <ExportOptions 
-        onPrint={handlePrint}
-        onExportPNG={handleExportPNG}
-        onExportJPEG={handleExportJPEG}
-        onExportPDF={handleExportPDF}
-        etiquettesParPage={etiquettesParPage}
-        setEtiquettesParPage={setEtiquettesParPage}
-      />
+          {/* Prévisualisation de l'étiquette */}
+          <div className="p-4 mt-4 border" ref={etiquetteRef}>
+            <Etiquette 
+              data={formData}
+              barcodeRef1={barcodeRef1A}
+              barcodeRef2={barcodeRef2A}
+            />
+          </div>
+        </div>
+      </main>
 
-      {/* Prévisualisation de l'étiquette */}
-      <div className="p-4 mt-4 border" ref={etiquetteRef}>
-        <Etiquette 
-          data={formData}
-          barcodeRef1={barcodeRef1A}
-          barcodeRef2={barcodeRef2A}
-        />
-      </div>
-      
       {/* Pied de page */}
       <Footer />
-      
-      {/* Conteneur pour l'export (masqué mais utilisé pour l'export d'image) */}
-      <div id="export-container" className="hidden">
-        <div ref={exportContainerRef} className="export-container">
-          <Etiquette 
-            data={formData}
-            barcodeRef1={{current: document.createElement('svg')}}
-            barcodeRef2={{current: document.createElement('svg')}}
-          />
-        </div>
-      </div>
-      
-      {/* Zone invisible utilisée pour l'impression */}
-      <div id="printable-area" className="hidden">
-        <Etiquette
-          data={formData}
-          barcodeRef1={{current: document.createElement('svg')}}
-          barcodeRef2={{current: document.createElement('svg')}}
-        />
-      </div>
     </div>
   );
 };

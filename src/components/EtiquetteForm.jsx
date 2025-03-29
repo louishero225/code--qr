@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * Composant de formulaire pour les informations de l'étiquette
  */
-const EtiquetteForm = ({ formData, handleChange, validateImei }) => {
+const EtiquetteForm = ({ formData, onChange, validateImei }) => {
   return (
     <div className="grid grid-cols-2 gap-4 mb-4 w-full max-w-md">
       <label className="flex flex-col">
@@ -12,7 +12,7 @@ const EtiquetteForm = ({ formData, handleChange, validateImei }) => {
           type="text"
           name="model"
           value={formData.model}
-          onChange={handleChange}
+          onChange={onChange}
           className="border p-2 rounded"
         />
       </label>
@@ -22,7 +22,7 @@ const EtiquetteForm = ({ formData, handleChange, validateImei }) => {
           type="text"
           name="color"
           value={formData.color}
-          onChange={handleChange}
+          onChange={onChange}
           className="border p-2 rounded"
         />
       </label>
@@ -39,7 +39,7 @@ const EtiquetteForm = ({ formData, handleChange, validateImei }) => {
           type="text"
           name="imei1"
           value={formData.imei1}
-          onChange={handleChange}
+          onChange={onChange}
           className={`border p-2 rounded ${
             !validateImei(formData.imei1) && formData.imei1
               ? "border-red-500"
@@ -60,7 +60,7 @@ const EtiquetteForm = ({ formData, handleChange, validateImei }) => {
           type="text"
           name="imei2"
           value={formData.imei2}
-          onChange={handleChange}
+          onChange={onChange}
           className={`border p-2 rounded ${
             !validateImei(formData.imei2) && formData.imei2
               ? "border-red-500"
@@ -74,7 +74,7 @@ const EtiquetteForm = ({ formData, handleChange, validateImei }) => {
           type="text"
           name="serial"
           value={formData.serial}
-          onChange={handleChange}
+          onChange={onChange}
           className="border p-2 rounded"
         />
       </label>
@@ -87,7 +87,7 @@ const EtiquetteForm = ({ formData, handleChange, validateImei }) => {
               type="text"
               name="labelA"
               value={formData.labelA}
-              onChange={handleChange}
+              onChange={onChange}
               className="border p-2 rounded w-12 ml-1"
             />
           </label>
